@@ -6,3 +6,6 @@
 
 build
 
+docker-compose.yml
+Dockerfile
+.vscode/launch.json

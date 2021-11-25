@@ -157,10 +157,6 @@ func buildQuery(chanID string, rpm readers.PageMetadata) (string, []interface{})
 		case "vd":
 			vals = append(vals, val)
 			condCQL = fmt.Sprintf(`%s AND data_value = ?`, condCQL)
-		case "vt":
-			vals = append(vals, val)
-			comparator := readers.ParseValueComparator(query)
-			condCQL = fmt.Sprintf(`%s AND time %s ?`, condCQL, comparator)
 		case "from":
 			vals = append(vals, val)
 			condCQL = fmt.Sprintf(`%s AND time >= ?`, condCQL)

@@ -52,7 +52,6 @@ type PageMetadata struct {
 	BoolValue   bool    `json:"vb,omitempty"`
 	StringValue string  `json:"vs,omitempty"`
 	DataValue   string  `json:"vd,omitempty"`
-	Time        float64 `json:"vt,omitempty"`
 	From        float64 `json:"from,omitempty"`
 	To          float64 `json:"to,omitempty"`
 	Format      string  `json:"format,omitempty"`
