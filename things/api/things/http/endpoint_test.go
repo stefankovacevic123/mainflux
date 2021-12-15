@@ -28,6 +28,7 @@ import (
 const (
 	contentType = "application/json"
 	email       = "user@example.com"
+	adminEmail  = "admin@example.com"
 	token       = "token"
 	wrongValue  = "wrong_value"
 	wrongID     = 0
@@ -35,6 +36,7 @@ const (
 	nameKey     = "name"
 	ascKey      = "asc"
 	descKey     = "desc"
+	prefix      = "fe6b4e92-cc98-425e-b0aa-"
 )
 
 var (
@@ -48,6 +50,7 @@ var (
 	}
 	invalidName    = strings.Repeat("m", maxNameSize+1)
 	notFoundRes    = toJSON(errorRes{things.ErrNotFound.Error()})
+	unauthzRes     = toJSON(errorRes{things.ErrAuthorization.Error()})
 	unauthRes      = toJSON(errorRes{things.ErrUnauthorizedAccess.Error()})
 	searchThingReq = things.PageMetadata{
 		Limit:  5,
@@ -79,7 +82,10 @@ func (tr testRequest) make() (*http.Response, error) {
 }
 
 func newService(tokens map[string]string) things.Service {
-	auth := mocks.NewAuthService(tokens)
+	userPolicy := mocks.MockSubjectSet{Object: "users", Relation: "member"}
+	adminPolicy := mocks.MockSubjectSet{Object: "authorities", Relation: "member"}
+	auth := mocks.NewAuthService(tokens, map[string][]mocks.MockSubjectSet{
+		adminEmail: {userPolicy, adminPolicy}, email: {userPolicy}})
 	conns := make(chan mocks.Connection)
 	thingsRepo := mocks.NewThingRepository(conns)
 	channelsRepo := mocks.NewChannelRepository(thingsRepo, conns)
@@ -126,7 +132,7 @@ func TestCreateThing(t *testing.T) {
 			contentType: contentType,
 			auth:        token,
 			status:      http.StatusCreated,
-			location:    "/things/001",
+			location:    fmt.Sprintf("/things/%s%012d", uuid.Prefix, 1),
 		},
 		{
 			desc:        "add thing with existing key",
@@ -142,7 +148,7 @@ func TestCreateThing(t *testing.T) {
 			contentType: contentType,
 			auth:        token,
 			status:      http.StatusCreated,
-			location:    "/things/002",
+			location:    fmt.Sprintf("/things/%s%012d", uuid.Prefix, 3),
 		},
 		{
 			desc:        "add thing with invalid auth token",
@@ -364,7 +370,7 @@ func TestUpdateThing(t *testing.T) {
 			id:          strconv.FormatUint(wrongID, 10),
 			contentType: contentType,
 			auth:        token,
-			status:      http.StatusNotFound,
+			status:      http.StatusForbidden,
 		},
 		{
 			desc:        "update thing with invalid id",
@@ -372,7 +378,7 @@ func TestUpdateThing(t *testing.T) {
 			id:          "invalid",
 			contentType: contentType,
 			auth:        token,
-			status:      http.StatusNotFound,
+			status:      http.StatusForbidden,
 		},
 		{
 			desc:        "update thing with invalid user token",
@@ -438,6 +444,123 @@ func TestUpdateThing(t *testing.T) {
 	}
 }
 
+func TestShareThing(t *testing.T) {
+	token2 := "token2"
+	svc := newService(map[string]string{token: email, token2: "user@ex.com"})
+	ts := newServer(svc)
+	defer ts.Close()
+
+	type shareThingReq struct {
+		UserIDs  []string `json:"user_ids"`
+		Policies []string `json:"policies"`
+	}
+
+	data := toJSON(shareThingReq{UserIDs: []string{"token2"}, Policies: []string{"read"}})
+	invalidData := toJSON(shareThingReq{})
+	invalidPolicies := toJSON(shareThingReq{UserIDs: []string{"token2"}, Policies: []string{"wrong"}})
+
+	ths, err := svc.CreateThings(context.Background(), token, thing)
+	require.Nil(t, err, fmt.Sprintf("unexpected error: %s\n", err))
+	th := ths[0]
+
+	cases := []struct {
+		desc        string
+		req         string
+		thingID     string
+		contentType string
+		token       string
+		status      int
+	}{
+		{
+			desc:        "share a thing",
+			req:         data,
+			thingID:     th.ID,
+			contentType: contentType,
+			token:       token,
+			status:      http.StatusOK,
+		},
+		{
+			desc:        "share a thing with empty content-type",
+			req:         data,
+			thingID:     th.ID,
+			contentType: "",
+			token:       token,
+			status:      http.StatusUnsupportedMediaType,
+		},
+		{
+			desc:        "share a thing with empty req body",
+			req:         "",
+			thingID:     th.ID,
+			contentType: contentType,
+			token:       token,
+			status:      http.StatusBadRequest,
+		},
+		{
+			desc:        "share a thing with empty token",
+			req:         data,
+			thingID:     th.ID,
+			contentType: contentType,
+			token:       "",
+			status:      http.StatusUnauthorized,
+		},
+		{
+			desc:        "share a thing with empty thing id",
+			req:         data,
+			thingID:     "",
+			contentType: contentType,
+			token:       token,
+			status:      http.StatusBadRequest,
+		},
+		{
+			desc:        "share a thing with invalid req body",
+			req:         invalidData,
+			thingID:     th.ID,
+			contentType: contentType,
+			token:       token,
+			status:      http.StatusBadRequest,
+		},
+		{
+			desc:        "share a thing with invalid policies request",
+			req:         invalidPolicies,
+			thingID:     th.ID,
+			contentType: contentType,
+			token:       token,
+			status:      http.StatusBadRequest,
+		},
+		{
+			desc:        "share a thing with invalid token",
+			req:         data,
+			thingID:     th.ID,
+			contentType: contentType,
+			token:       "invalid",
+			status:      http.StatusUnauthorized,
+		},
+		{
+			desc:        "share a thing with unauthorized access",
+			req:         data,
+			thingID:     th.ID,
+			contentType: contentType,
+			token:       token2,
+			status:      http.StatusForbidden,
+		},
+	}
+
+	for _, tc := range cases {
+		req := testRequest{
+			client:      ts.Client(),
+			method:      http.MethodPost,
+			url:         fmt.Sprintf("%s/things/%s/share", ts.URL, tc.thingID),
+			contentType: tc.contentType,
+			token:       tc.token,
+			body:        strings.NewReader(tc.req),
+		}
+		res, err := req.make()
+		assert.Nil(t, err, fmt.Sprintf("%s: unexpected error %s", tc.desc, err))
+
+		assert.Equal(t, tc.status, res.StatusCode, fmt.Sprintf("%s: expected status code %d got %d", tc.desc, tc.status, res.StatusCode))
+	}
+}
+
 func TestUpdateKey(t *testing.T) {
 	svc := newService(map[string]string{token: email})
 	ts := newServer(svc)
@@ -493,7 +616,7 @@ func TestUpdateKey(t *testing.T) {
 			id:          strconv.FormatUint(wrongID, 10),
 			contentType: contentType,
 			auth:        token,
-			status:      http.StatusNotFound,
+			status:      http.StatusForbidden,
 		},
 		{
 			desc:        "update thing with invalid id",
@@ -501,7 +624,7 @@ func TestUpdateKey(t *testing.T) {
 			id:          "invalid",
 			contentType: contentType,
 			auth:        token,
-			status:      http.StatusNotFound,
+			status:      http.StatusForbidden,
 		},
 		{
 			desc:        "update thing with invalid user token",
@@ -594,8 +717,8 @@ func TestViewThing(t *testing.T) {
 			desc:   "view non-existent thing",
 			id:     strconv.FormatUint(wrongID, 10),
 			auth:   token,
-			status: http.StatusNotFound,
-			res:    notFoundRes,
+			status: http.StatusForbidden,
+			res:    unauthzRes,
 		},
 		{
 			desc:   "view thing by passing invalid token",
@@ -615,8 +738,8 @@ func TestViewThing(t *testing.T) {
 			desc:   "view thing by passing invalid id",
 			id:     "invalid",
 			auth:   token,
-			status: http.StatusNotFound,
-			res:    notFoundRes,
+			status: http.StatusForbidden,
+			res:    unauthzRes,
 		},
 	}
 
@@ -644,7 +767,10 @@ func TestListThings(t *testing.T) {
 
 	data := []thingRes{}
 	for i := 0; i < 100; i++ {
-		ths, err := svc.CreateThings(context.Background(), token, thing)
+		id := fmt.Sprintf("%s%012d", prefix, i + 1)
+		thing1 := thing
+		thing1.ID = id
+		ths, err := svc.CreateThings(context.Background(), token, thing1)
 		require.Nil(t, err, fmt.Sprintf("unexpected error: %s", err))
 		th := ths[0]
 		data = append(data, thingRes{
@@ -881,7 +1007,8 @@ func TestSearchThings(t *testing.T) {
 	data := []thingRes{}
 	for i := 0; i < 100; i++ {
 		name := "name_" + fmt.Sprintf("%03d", i+1)
-		ths, err := svc.CreateThings(context.Background(), token, things.Thing{Name: name, Metadata: map[string]interface{}{"test": name}})
+		id := fmt.Sprintf("%s%012d", prefix, i + 1)
+		ths, err := svc.CreateThings(context.Background(), token, things.Thing{ID: id, Name: name, Metadata: map[string]interface{}{"test": name}})
 		require.Nil(t, err, fmt.Sprintf("unexpected error: %s", err))
 		th := ths[0]
 		data = append(data, thingRes{
@@ -1048,7 +1175,10 @@ func TestListThingsByChannel(t *testing.T) {
 
 	data := []thingRes{}
 	for i := 0; i < 101; i++ {
-		ths, err := svc.CreateThings(context.Background(), token, thing)
+		id := fmt.Sprintf("%s%012d", prefix, i + 1)
+		thing1 := thing
+		thing1.ID = id
+		ths, err := svc.CreateThings(context.Background(), token, thing1)
 		require.Nil(t, err, fmt.Sprintf("unexpected error: %s", err))
 		th := ths[0]
 		err = svc.Connect(context.Background(), token, []string{ch.ID}, []string{th.ID})
@@ -1242,7 +1372,7 @@ func TestRemoveThing(t *testing.T) {
 			desc:   "delete non-existent thing",
 			id:     strconv.FormatUint(wrongID, 10),
 			auth:   token,
-			status: http.StatusNoContent,
+			status: http.StatusForbidden,
 		},
 		{
 			desc:   "delete thing with invalid token",
@@ -1296,7 +1426,7 @@ func TestCreateChannel(t *testing.T) {
 			contentType: contentType,
 			auth:        token,
 			status:      http.StatusCreated,
-			location:    "/channels/001",
+			location:    fmt.Sprintf("/channels/%s%012d", uuid.Prefix, 1),
 		},
 		{
 			desc:        "create new channel with invalid token",
@@ -1328,7 +1458,7 @@ func TestCreateChannel(t *testing.T) {
 			contentType: contentType,
 			auth:        token,
 			status:      http.StatusCreated,
-			location:    "/channels/002",
+			location:    fmt.Sprintf("/channels/%s%012d", uuid.Prefix, 2),
 		},
 		{
 			desc:        "create new channel with empty request",
@@ -1474,7 +1604,7 @@ func TestCreateChannels(t *testing.T) {
 }
 
 func TestUpdateChannel(t *testing.T) {
-	svc := newService(map[string]string{token: email})
+	svc := newService(map[string]string{token: adminEmail})
 	ts := newServer(svc)
 	defer ts.Close()
 
@@ -1594,7 +1724,7 @@ func TestUpdateChannel(t *testing.T) {
 }
 
 func TestViewChannel(t *testing.T) {
-	svc := newService(map[string]string{token: email})
+	svc := newService(map[string]string{token: adminEmail})
 	ts := newServer(svc)
 	defer ts.Close()
 
@@ -1899,7 +2029,10 @@ func TestListChannelsByThing(t *testing.T) {
 
 	channels := []channelRes{}
 	for i := 0; i < 101; i++ {
-		chs, err := svc.CreateChannels(context.Background(), token, channel)
+		id := fmt.Sprintf("%s%012d", prefix, i + 1)
+		channel1 := channel
+		channel1.ID = id
+		chs, err := svc.CreateChannels(context.Background(), token, channel1)
 		require.Nil(t, err, fmt.Sprintf("unexpected error: %s", err))
 		ch := chs[0]
 		err = svc.Connect(context.Background(), token, []string{ch.ID}, []string{th.ID})
@@ -2065,7 +2198,7 @@ func TestListChannelsByThing(t *testing.T) {
 }
 
 func TestRemoveChannel(t *testing.T) {
-	svc := newService(map[string]string{token: email})
+	svc := newService(map[string]string{token: adminEmail})
 	ts := newServer(svc)
 	defer ts.Close()
 
