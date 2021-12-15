@@ -1,7 +1,48 @@
 module github.com/mainflux/mainflux
 
 go 1.17
+
 require (
+	github.com/cenkalti/backoff/v4 v4.1.1
+	github.com/docker/docker v20.10.8+incompatible
+	github.com/eclipse/paho.mqtt.golang v1.3.5
+	github.com/fatih/color v1.12.0
+	github.com/fiorix/go-smpp v0.0.0-20210403173735-2894b96e70ba
+	github.com/go-kit/kit v0.11.0
+	github.com/go-redis/redis/v8 v8.11.3
+	github.com/go-zoo/bone v1.3.0
+	github.com/gocql/gocql v0.0.0-20210817081954-bc256bbb90de
+	github.com/gofrs/uuid v4.0.0+incompatible
+	github.com/gogo/protobuf v1.3.2
+	github.com/golang-jwt/jwt/v4 v4.0.0
+	github.com/golang/protobuf v1.5.2
+	github.com/gopcua/opcua v0.1.6
+	github.com/hashicorp/vault/api v1.1.1
+	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
+	github.com/influxdata/influxdb v1.9.3
+	github.com/jmoiron/sqlx v1.3.4
+	github.com/lib/pq v1.10.2
+	github.com/mainflux/mproxy v0.2.2
+	github.com/mainflux/senml v1.5.0
+	github.com/mitchellh/mapstructure v1.4.1
+	github.com/nats-io/nats.go v1.11.0
+	github.com/oklog/ulid/v2 v2.0.2
+	github.com/opentracing/opentracing-go v1.2.0
+	github.com/ory/dockertest/v3 v3.7.0
+	github.com/pelletier/go-toml v1.9.3
+	github.com/plgd-dev/go-coap/v2 v2.4.0
+	github.com/prometheus/client_golang v1.11.0
+	github.com/rubenv/sql-migrate v0.0.0-20210614095031-55d5740dbbcc
+	github.com/spf13/cobra v1.2.1
+	github.com/spf13/viper v1.8.1
+	github.com/stretchr/testify v1.7.0
+	github.com/subosito/gotenv v1.2.0
+	github.com/uber/jaeger-client-go v2.29.1+incompatible
+	go.mongodb.org/mongo-driver v1.7.1
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
+	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d
+	gonum.org/v1/gonum v0.9.3
+	google.golang.org/grpc v1.40.0
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Microsoft/go-winio v0.4.15-0.20190919025122-fc70bd9a86b5 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
@@ -16,7 +57,7 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/dsnet/golib/memfile v0.0.0-20200723050859-c110804dfa93 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/fxamacker/cbor/v2 v2.3.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.2.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
