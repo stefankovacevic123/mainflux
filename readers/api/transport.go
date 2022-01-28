@@ -211,7 +211,11 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 }
 
 func authorize(r *http.Request, chanID string) error {
-	token := r.Header.Get("Authorization")
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return err
+	}
+	token := t
 	if token == "" {
 		return errUnauthorizedAccess
 	}
@@ -219,8 +223,7 @@ func authorize(r *http.Request, chanID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	_, err := auth.CanAccessByKey(ctx, &mainflux.AccessByKeyReq{Token: token, ChanID: chanID})
-	if err != nil {
+	if _, err := auth.CanAccessByKey(ctx, &mainflux.AccessByKeyReq{Token: token, ChanID: chanID}); err != nil {
 		e, ok := status.FromError(err)
 		if ok && e.Code() == codes.PermissionDenied {
 			return errUnauthorizedAccess

@@ -154,8 +154,13 @@ func decodeListGroupsRequest(_ context.Context, r *http.Request) (interface{}, e
 		return nil, err
 	}
 
+	to, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+
 	req := listGroupsReq{
-		token:    r.Header.Get("Authorization"),
+		token:    to,
 		level:    l,
 		metadata: m,
 		tree:     t,
@@ -190,8 +195,13 @@ func decodeListMembersRequest(_ context.Context, r *http.Request) (interface{}, 
 		return nil, err
 	}
 
+	to, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+
 	req := listMembersReq{
-		token:     r.Header.Get("Authorization"),
+		token:     to,
 		id:        bone.GetValue(r, "groupID"),
 		groupType: t,
 		offset:    o,
@@ -218,8 +228,13 @@ func decodeListMembershipsRequest(_ context.Context, r *http.Request) (interface
 		return nil, err
 	}
 
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+
 	req := listMembershipsReq{
-		token:    r.Header.Get("Authorization"),
+		token:    t,
 		id:       bone.GetValue(r, "memberID"),
 		offset:   o,
 		limit:    l,
@@ -239,7 +254,12 @@ func decodeGroupCreate(_ context.Context, r *http.Request) (interface{}, error) 
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
 
-	req.token = r.Header.Get("Authorization")
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+
+	req.token = t
 	return req, nil
 }
 
@@ -253,14 +273,24 @@ func decodeGroupUpdate(_ context.Context, r *http.Request) (interface{}, error) 
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
 
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+
 	req.id = bone.GetValue(r, "groupID")
-	req.token = r.Header.Get("Authorization")
+	req.token = t
 	return req, nil
 }
 
 func decodeGroupRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+
 	req := groupReq{
-		token: r.Header.Get("Authorization"),
+		token: t,
 		id:    bone.GetValue(r, "groupID"),
 	}
 
@@ -268,8 +298,13 @@ func decodeGroupRequest(_ context.Context, r *http.Request) (interface{}, error)
 }
 
 func decodeAssignRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+
 	req := assignReq{
-		token:   r.Header.Get("Authorization"),
+		token:   t,
 		groupID: bone.GetValue(r, "groupID"),
 	}
 
@@ -281,9 +316,14 @@ func decodeAssignRequest(_ context.Context, r *http.Request) (interface{}, error
 }
 
 func decodeUnassignRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+
 	req := unassignReq{
 		assignReq{
-			token:   r.Header.Get("Authorization"),
+			token:   t,
 			groupID: bone.GetValue(r, "groupID"),
 		},
 	}

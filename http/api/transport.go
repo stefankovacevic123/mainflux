@@ -18,6 +18,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/mainflux/mainflux"
 	adapter "github.com/mainflux/mainflux/http"
+	"github.com/mainflux/mainflux/internal/httputil"
 	"github.com/mainflux/mainflux/pkg/errors"
 	"github.com/mainflux/mainflux/pkg/messaging"
 	opentracing "github.com/opentracing/opentracing-go"
@@ -102,7 +103,10 @@ func decodeRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	token := r.Header.Get("Authorization")
+	token, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
 	if _, pass, ok := r.BasicAuth(); ok {
 		token = pass
 	}

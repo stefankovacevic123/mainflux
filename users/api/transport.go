@@ -118,16 +118,24 @@ func MakeHandler(svc users.Service, tracer opentracing.Tracer) http.Handler {
 }
 
 func decodeViewUser(_ context.Context, r *http.Request) (interface{}, error) {
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
 	req := viewUserReq{
-		token:  r.Header.Get("Authorization"),
+		token:  t,
 		userID: bone.GetValue(r, "userID"),
 	}
 	return req, nil
 }
 
 func decodeViewProfile(_ context.Context, r *http.Request) (interface{}, error) {
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
 	req := viewUserReq{
-		token: r.Header.Get("Authorization"),
+		token: t,
 	}
 	return req, nil
 }
@@ -153,8 +161,12 @@ func decodeListUsers(_ context.Context, r *http.Request) (interface{}, error) {
 		return nil, err
 	}
 
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
 	req := listUsersReq{
-		token:    r.Header.Get("Authorization"),
+		token:    t,
 		offset:   o,
 		limit:    l,
 		email:    e,
@@ -169,7 +181,11 @@ func decodeUpdateUser(_ context.Context, r *http.Request) (interface{}, error) {
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
 
-	req.token = r.Header.Get("Authorization")
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+	req.token = t
 	return req, nil
 }
 
@@ -237,7 +253,11 @@ func decodePasswordChange(_ context.Context, r *http.Request) (interface{}, erro
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
 
-	req.Token = r.Header.Get("Authorization")
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+	req.Token = t
 
 	return req, nil
 }
@@ -258,8 +278,12 @@ func decodeListMembersRequest(_ context.Context, r *http.Request) (interface{}, 
 		return nil, err
 	}
 
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
 	req := listMemberGroupReq{
-		token:    r.Header.Get("Authorization"),
+		token:    t,
 		groupID:  bone.GetValue(r, "groupId"),
 		offset:   o,
 		limit:    l,

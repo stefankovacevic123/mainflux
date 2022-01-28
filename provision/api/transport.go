@@ -9,6 +9,7 @@ import (
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/go-zoo/bone"
 	"github.com/mainflux/mainflux"
+	"github.com/mainflux/mainflux/internal/httputil"
 	"github.com/mainflux/mainflux/pkg/errors"
 	"github.com/mainflux/mainflux/provision"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -74,8 +75,11 @@ func decodeProvisionRequest(_ context.Context, r *http.Request) (interface{}, er
 	if r.Header.Get("Content-Type") != contentType {
 		return nil, errors.ErrUnsupportedContentType
 	}
-
-	req := provisionReq{token: r.Header.Get("Authorization")}
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+	req := provisionReq{token: t}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, err
 	}
@@ -87,8 +91,11 @@ func decodeMappingRequest(_ context.Context, r *http.Request) (interface{}, erro
 	if r.Header.Get("Content-Type") != contentType {
 		return nil, errors.ErrUnsupportedContentType
 	}
-
-	req := mappingReq{token: r.Header.Get("Authorization")}
+	t, err := httputil.FormatAuthString(r)
+	if err != nil {
+		return nil, err
+	}
+	req := mappingReq{token: t}
 
 	return req, nil
 }
