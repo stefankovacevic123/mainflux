@@ -8,6 +8,8 @@ import (
 	"github.com/mainflux/mainflux/pkg/errors"
 )
 
+const maxLimitSize = 100
+
 type apiReq interface {
 	validate() error
 }
@@ -27,7 +29,7 @@ type addReq struct {
 
 func (req addReq) validate() error {
 	if req.token == "" {
-		return errors.ErrUnauthorizedAccess
+		return errors.ErrAuthentication
 	}
 
 	if req.ExternalID == "" || req.ExternalKey == "" {
@@ -44,7 +46,7 @@ type entityReq struct {
 
 func (req entityReq) validate() error {
 	if req.key == "" {
-		return errors.ErrUnauthorizedAccess
+		return errors.ErrAuthentication
 	}
 
 	if req.id == "" {
@@ -63,7 +65,7 @@ type updateReq struct {
 
 func (req updateReq) validate() error {
 	if req.key == "" {
-		return errors.ErrUnauthorizedAccess
+		return errors.ErrAuthentication
 	}
 
 	if req.id == "" {
@@ -83,7 +85,7 @@ type updateCertReq struct {
 
 func (req updateCertReq) validate() error {
 	if req.key == "" {
-		return errors.ErrUnauthorizedAccess
+		return errors.ErrAuthentication
 	}
 
 	if req.thingID == "" {
@@ -101,7 +103,7 @@ type updateConnReq struct {
 
 func (req updateConnReq) validate() error {
 	if req.key == "" {
-		return errors.ErrUnauthorizedAccess
+		return errors.ErrAuthentication
 	}
 
 	if req.id == "" {
@@ -120,10 +122,10 @@ type listReq struct {
 
 func (req listReq) validate() error {
 	if req.key == "" {
-		return errors.ErrUnauthorizedAccess
+		return errors.ErrAuthentication
 	}
 
-	if req.limit == 0 || req.limit > maxLimit {
+	if req.limit > maxLimitSize {
 		return errors.ErrMalformedEntity
 	}
 
@@ -137,7 +139,7 @@ type bootstrapReq struct {
 
 func (req bootstrapReq) validate() error {
 	if req.key == "" {
-		return errors.ErrUnauthorizedAccess
+		return errors.ErrAuthentication
 	}
 
 	if req.id == "" {
@@ -155,7 +157,7 @@ type changeStateReq struct {
 
 func (req changeStateReq) validate() error {
 	if req.key == "" {
-		return errors.ErrUnauthorizedAccess
+		return errors.ErrAuthentication
 	}
 
 	if req.id == "" {

@@ -6,7 +6,6 @@ package keys
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"strings"
 
@@ -103,25 +102,21 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	switch {
 	case errors.Contains(err, errors.ErrMalformedEntity):
 		w.WriteHeader(http.StatusBadRequest)
-	case errors.Contains(err, errors.ErrUnauthorizedAccess):
-		w.WriteHeader(http.StatusForbidden)
+	case errors.Contains(err, errors.ErrAuthentication):
+		w.WriteHeader(http.StatusUnauthorized)
 	case errors.Contains(err, errors.ErrNotFound):
 		w.WriteHeader(http.StatusNotFound)
 	case errors.Contains(err, errors.ErrConflict):
 		w.WriteHeader(http.StatusConflict)
-	case errors.Contains(err, io.EOF):
-		w.WriteHeader(http.StatusBadRequest)
-	case errors.Contains(err, io.ErrUnexpectedEOF):
-		w.WriteHeader(http.StatusBadRequest)
 	case errors.Contains(err, errors.ErrUnsupportedContentType):
 		w.WriteHeader(http.StatusUnsupportedMediaType)
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	errorVal, ok := err.(errors.Error)
-	if ok {
-		if err := json.NewEncoder(w).Encode(errorRes{Err: errorVal.Msg()}); err != nil {
-			w.Header().Set("Content-Type", contentType)
+
+	if errorVal, ok := err.(errors.Error); ok {
+		w.Header().Set("Content-Type", contentType)
+		if err := json.NewEncoder(w).Encode(httputil.ErrorRes{Err: errorVal.Msg()}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}

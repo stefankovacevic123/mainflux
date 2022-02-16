@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 
 	kithttp "github.com/go-kit/kit/transport/http"
@@ -17,11 +16,6 @@ import (
 
 const (
 	contentType = "application/json"
-)
-
-var (
-	errUnauthorized = errors.New("missing or invalid credentials provided")
-	errConflict     = errors.New("entity already exists")
 )
 
 // MakeHandler returns a HTTP handler for API endpoints.
@@ -101,22 +95,23 @@ func decodeMappingRequest(_ context.Context, r *http.Request) (interface{}, erro
 }
 
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
-	w.Header().Set("Content-Type", contentType)
-
-	switch err {
-	case errors.ErrUnsupportedContentType:
+	switch {
+	case errors.Contains(err, errors.ErrUnsupportedContentType):
 		w.WriteHeader(http.StatusUnsupportedMediaType)
-	case io.EOF, errors.ErrMalformedEntity:
+	case errors.Contains(err, errors.ErrMalformedEntity):
 		w.WriteHeader(http.StatusBadRequest)
-	case errConflict:
+	case errors.Contains(err, errors.ErrConflict):
 		w.WriteHeader(http.StatusConflict)
+	case errors.Contains(err, errors.ErrAuthentication):
+		w.WriteHeader(http.StatusUnauthorized)
+
 	default:
-		switch err.(type) {
-		case *json.SyntaxError:
-			w.WriteHeader(http.StatusBadRequest)
-		case *json.UnmarshalTypeError:
-			w.WriteHeader(http.StatusBadRequest)
-		default:
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	if errorVal, ok := err.(errors.Error); ok {
+		w.Header().Set("Content-Type", contentType)
+		if err := json.NewEncoder(w).Encode(httputil.ErrorRes{Err: errorVal.Msg()}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
