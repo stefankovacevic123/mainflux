@@ -108,8 +108,13 @@ func decodeListCerts(_ context.Context, r *http.Request) (interface{}, error) {
 }
 
 func decodeViewCert(_ context.Context, r *http.Request) (interface{}, error) {
+	t, err := httputil.ExtractAuthToken(r)
+	if err != nil {
+		return nil, err
+	}
+
 	req := viewReq{
-		token:    r.Header.Get("Authorization"),
+		token:    t,
 		serialID: bone.GetValue(r, "certId"),
 	}
 

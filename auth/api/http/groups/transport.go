@@ -127,13 +127,19 @@ func decodeShareGroupRequest(ctx context.Context, r *http.Request) (interface{},
 		return nil, errors.ErrUnsupportedContentType
 	}
 
-	var req shareGroupAccessReq
+	t, err := httputil.ExtractAuthToken(r)
+	if err != nil {
+		return nil, err
+	}
+
+	req := shareGroupAccessReq{
+		token:       t,
+		userGroupID: bone.GetValue(r, "subjectGroupID"),
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
 
-	req.userGroupID = bone.GetValue(r, "subjectGroupID")
-	req.token = r.Header.Get("Authorization")
 	return req, nil
 }
 

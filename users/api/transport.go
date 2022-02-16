@@ -205,12 +205,22 @@ func decodeCreateUserReq(_ context.Context, r *http.Request) (interface{}, error
 		return nil, errors.ErrUnsupportedContentType
 	}
 
+	t, err := httputil.ExtractAuthToken(r)
+	if err != nil {
+		return nil, err
+	}
+
 	var user users.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
 
-	return createUserReq{user, r.Header.Get("Authorization")}, nil
+	req := createUserReq{
+		user:  user,
+		token: t,
+	}
+
+	return req, nil
 }
 
 func decodePasswordResetRequest(_ context.Context, r *http.Request) (interface{}, error) {
