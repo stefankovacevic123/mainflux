@@ -72,7 +72,7 @@ func decodeCreate(_ context.Context, r *http.Request) (interface{}, error) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func decodeCreate(_ context.Context, r *http.Request) (interface{}, error) {
 }
 
 func decodeSubscription(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func decodeSubscription(_ context.Context, r *http.Request) (interface{}, error)
 }
 
 func decodeList(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}

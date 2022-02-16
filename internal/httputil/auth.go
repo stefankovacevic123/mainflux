@@ -9,12 +9,21 @@ import (
 	"strings"
 )
 
-// FormatAuthString reads the value of request Authorization and removes the Bearer substring or returns error if it does not exist
-func FormatAuthString(r *http.Request) (string, error) {
+const (
+	userTokenPrefix = "Bearer "
+)
+
+var (
+	errAuthSchema = "authentication scheme not starting with a bearer"
+)
+
+// ExtractAuthToken reads the value of request Authorization and removes the Bearer substring or returns error if it does not exist
+func ExtractAuthToken(r *http.Request) (string, error) {
 	token := r.Header.Get("Authorization")
-	if !strings.Contains(token, "Bearer ") {
-		return token, errors.New("Token not containing a Bearer.")
+
+	if !strings.HasPrefix(token, userTokenPrefix) {
+		return token, errors.New(errAuthSchema)
 	}
 
-	return strings.ReplaceAll(token, "Bearer ", ""), nil
+	return strings.TrimPrefix(token, userTokenPrefix), nil
 }

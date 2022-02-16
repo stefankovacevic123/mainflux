@@ -153,7 +153,7 @@ func decodeListGroupsRequest(_ context.Context, r *http.Request) (interface{}, e
 		return nil, err
 	}
 
-	to, err := httputil.FormatAuthString(r)
+	to, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +194,7 @@ func decodeListMembersRequest(_ context.Context, r *http.Request) (interface{}, 
 		return nil, err
 	}
 
-	to, err := httputil.FormatAuthString(r)
+	to, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +227,7 @@ func decodeListMembershipsRequest(_ context.Context, r *http.Request) (interface
 		return nil, err
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func decodeGroupCreate(_ context.Context, r *http.Request) (interface{}, error) 
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -272,7 +272,7 @@ func decodeGroupUpdate(_ context.Context, r *http.Request) (interface{}, error) 
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -283,7 +283,7 @@ func decodeGroupUpdate(_ context.Context, r *http.Request) (interface{}, error) 
 }
 
 func decodeGroupRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +297,7 @@ func decodeGroupRequest(_ context.Context, r *http.Request) (interface{}, error)
 }
 
 func decodeAssignRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -315,7 +315,7 @@ func decodeAssignRequest(_ context.Context, r *http.Request) (interface{}, error
 }
 
 func decodeUnassignRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}

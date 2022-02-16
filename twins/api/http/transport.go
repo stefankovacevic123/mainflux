@@ -91,7 +91,7 @@ func decodeTwinCreation(_ context.Context, r *http.Request) (interface{}, error)
 		return nil, errors.ErrUnsupportedContentType
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func decodeTwinUpdate(_ context.Context, r *http.Request) (interface{}, error) {
 		return nil, errors.ErrUnsupportedContentType
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func decodeTwinUpdate(_ context.Context, r *http.Request) (interface{}, error) {
 }
 
 func decodeView(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func decodeList(_ context.Context, r *http.Request) (interface{}, error) {
 		return nil, err
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ func decodeListStates(_ context.Context, r *http.Request) (interface{}, error) {
 		return nil, err
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}

@@ -94,7 +94,7 @@ func decodeListCerts(_ context.Context, r *http.Request) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func decodeCerts(_ context.Context, r *http.Request) (interface{}, error) {
 	if r.Header.Get("Content-Type") != contentType {
 		return nil, errors.ErrUnsupportedContentType
 	}
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func decodeCerts(_ context.Context, r *http.Request) (interface{}, error) {
 }
 
 func decodeRevokeCerts(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}

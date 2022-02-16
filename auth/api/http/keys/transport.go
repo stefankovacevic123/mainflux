@@ -54,7 +54,7 @@ func decodeIssue(_ context.Context, r *http.Request) (interface{}, error) {
 	if !strings.Contains(r.Header.Get("Content-Type"), contentType) {
 		return nil, errors.ErrUnsupportedContentType
 	}
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func decodeIssue(_ context.Context, r *http.Request) (interface{}, error) {
 }
 
 func decodeKeyReq(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}

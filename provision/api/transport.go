@@ -69,7 +69,7 @@ func decodeProvisionRequest(_ context.Context, r *http.Request) (interface{}, er
 	if r.Header.Get("Content-Type") != contentType {
 		return nil, errors.ErrUnsupportedContentType
 	}
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func decodeMappingRequest(_ context.Context, r *http.Request) (interface{}, erro
 	if r.Header.Get("Content-Type") != contentType {
 		return nil, errors.ErrUnsupportedContentType
 	}
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}

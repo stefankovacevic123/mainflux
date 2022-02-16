@@ -110,7 +110,7 @@ func decodeAddRequest(_ context.Context, r *http.Request) (interface{}, error) {
 		return nil, errors.ErrUnsupportedContentType
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func decodeUpdateRequest(_ context.Context, r *http.Request) (interface{}, error
 		return nil, errors.ErrUnsupportedContentType
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func decodeUpdateCertRequest(_ context.Context, r *http.Request) (interface{}, e
 		return nil, errors.ErrUnsupportedContentType
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func decodeUpdateConnRequest(_ context.Context, r *http.Request) (interface{}, e
 		return nil, errors.ErrUnsupportedContentType
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +201,7 @@ func decodeListRequest(_ context.Context, r *http.Request) (interface{}, error) 
 
 	filter := parseFilter(q)
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -217,7 +217,7 @@ func decodeListRequest(_ context.Context, r *http.Request) (interface{}, error) 
 }
 
 func decodeBootstrapRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +235,7 @@ func decodeStateRequest(_ context.Context, r *http.Request) (interface{}, error)
 		return nil, errors.ErrUnsupportedContentType
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +250,7 @@ func decodeStateRequest(_ context.Context, r *http.Request) (interface{}, error)
 }
 
 func decodeEntityRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}

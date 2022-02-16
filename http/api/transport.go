@@ -108,7 +108,7 @@ func decodeRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	token, err := httputil.FormatAuthString(r)
+	token, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}

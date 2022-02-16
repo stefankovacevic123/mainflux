@@ -116,7 +116,7 @@ func MakeHandler(svc users.Service, tracer opentracing.Tracer) http.Handler {
 }
 
 func decodeViewUser(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func decodeViewUser(_ context.Context, r *http.Request) (interface{}, error) {
 }
 
 func decodeViewProfile(_ context.Context, r *http.Request) (interface{}, error) {
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func decodeListUsers(_ context.Context, r *http.Request) (interface{}, error) {
 		return nil, err
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func decodeUpdateUser(_ context.Context, r *http.Request) (interface{}, error) {
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -251,7 +251,7 @@ func decodePasswordChange(_ context.Context, r *http.Request) (interface{}, erro
 		return nil, errors.Wrap(errors.ErrMalformedEntity, err)
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -276,7 +276,7 @@ func decodeListMembersRequest(_ context.Context, r *http.Request) (interface{}, 
 		return nil, err
 	}
 
-	t, err := httputil.FormatAuthString(r)
+	t, err := httputil.ExtractAuthToken(r)
 	if err != nil {
 		return nil, err
 	}
