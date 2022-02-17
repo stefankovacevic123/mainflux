@@ -10,10 +10,8 @@ import (
 	"github.com/mainflux/mainflux/pkg/errors"
 )
 
-const (
-	// BearerPrefix represents the token prefix for Bearer authentication scheme.
-	BearerPrefix = "Bearer "
-)
+// BearerPrefix represents the token prefix for Bearer authentication scheme.
+const BearerPrefix = "Bearer "
 
 // ExtractAuthToken reads the value of request Authorization and removes the Bearer substring or returns error if it does not exist
 func ExtractAuthToken(r *http.Request) (string, error) {
